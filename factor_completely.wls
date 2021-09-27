@@ -1,0 +1,11 @@
+(*From Daniel Lichtblau*)
+factorCompletely[poly_, x_] := 
+ Module[{solns, lcoeff}, 
+  solns = Solve[poly == 0, x, Cubics -> False, Quartics -> False];
+  lcoeff = Coefficient[poly, x^Exponent[poly, x]];
+  lcoeff*(Times @@ (x - (x /. solns)))]
+  (*Examples*)
+  
+  Apart[1/factorCompletely[(z^2 + 9) (z^2 + 4), z]]
+  
+  Apart[1/((z^2 + 9) (z^2 + 4)), z]
