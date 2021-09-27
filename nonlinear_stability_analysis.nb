@@ -1,0 +1,2569 @@
+(***********************************************************************
+
+                    Mathematica-Compatible Notebook
+
+This notebook can be used on any computer system with Mathematica 3.0,
+MathReader 3.0, or any compatible application. The data for the notebook 
+starts with the line of stars above.
+
+To get the notebook into a Mathematica-compatible application, do one of 
+the following:
+
+* Save the data starting with the line of stars above into a file
+  with a name ending in .nb, then open the file inside the application;
+
+* Copy the data starting with the line of stars above to the
+  clipboard, then use the Paste menu command inside the application.
+
+Data for notebooks contains only printable 7-bit ASCII and can be
+sent directly in email or through ftp in text mode.  Newlines can be
+CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
+
+NOTE: If you modify the data for this notebook not in a Mathematica-
+compatible application, you must delete the line below containing the 
+word CacheID, otherwise Mathematica-compatible applications may try to 
+use invalid cache data.
+
+For more information on notebooks and Mathematica-compatible 
+applications, contact Wolfram Research:
+  web: http://www.wolfram.com
+  email: info@wolfram.com
+  phone: +1-217-398-0700 (U.S.)
+
+Notebook reader applications are available free of charge from 
+Wolfram Research.
+***********************************************************************)
+
+(*CacheID: 232*)
+
+
+(*NotebookFileLineBreakTest
+NotebookFileLineBreakTest*)
+(*NotebookOptionsPosition[     47432,       2219]*)
+(*NotebookOutlinePosition[     48513,       2254]*)
+(*  CellTagsIndexPosition[     48469,       2250]*)
+(*WindowFrame->Normal*)
+
+
+
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[TextData[
+"A  Stability Analysis Method for Non-linear Systems"], "Title",
+  Evaluatable->False,
+  CellHorizontalScrolling->False,
+  TextAlignment->Center],
+
+Cell[TextData[
+"by  Jay Oplinger\n\n\nThis notebook written in June, 1996.\nThe vgrad.m \
+package written in April, 1991.\n\n\nI would be interested  in your comments, \
+any corrections, and suggestions for improvements.  Contact me through email \
+at  JOplinger@aol.com\n\n"], "Text",
+  Evaluatable->False],
+
+Cell[TextData["<<VGRAD`VGRAD`"], "Input",
+  PageWidth->Infinity,
+  InitializationCell->True,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[TextData[
+"Abstract:  Liapunov functions allow the determination of stability for \
+non-linear systems without the need to find exact solutions.  The Variable \
+Gradient Method provides a systematic approach to determining a suitable \
+Liapunov function.  This package automates the steps involved in generating a \
+Liapunov Function using the Variable Gradient Method.  The notebook provides \
+an overview of the theory behind non-linear stability analysis and a \
+discussion of how to interact with the package, as well as some examples. "], 
+  "Text",
+  Evaluatable->False,
+  AspectRatioFixed->True,
+  FontFamily->"Helv",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Theoretical Overview"], "Subtitle",
+  Evaluatable->False,
+  CellHorizontalScrolling->False,
+  TextAlignment->Center],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Stability Concepts"], "Section",
+  Evaluatable->False],
+
+Cell[TextData[
+"\tThe concept of stability has different definitions depending on whether \
+the discussion is primarily linear time-invariant systems or non-linear \
+systems.\n\tLinear time-invariant systems are modeled as differential \
+equations with constant coefficients.  A determination of stability for these \
+types of systems can be found through the use of Laplace Transform  \
+techniques.[3]  If the poles of the system lie in the left-hand plane, then \
+the time domain solution will fall to zero as time approaches infinity.  If, \
+on the other hand, the poles lie in the right hand plane, then the time \
+domain solution will increase without bound as time approaches infinity.  \
+Stability, in the linear sense, is thought of in terms of the exact solution \
+to the defining differential equation.\n\tFor non-linear differential \
+equations this definition would also apply, if we could find exact solutions \
+to the differential equations.  Since in only very rare cases is this \
+possible, the need to search for an alternate definition of stability is \
+required.  One approach is to look at the basic definitions in elementary \
+physics of what constitutes stable and unstable equilibrium points.  This is \
+developed by utilizing energy concepts."], "Text",
+  Evaluatable->False,
+  FontFamily->"Helv",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[TextData[
+"\tA quick example:  We have a marble and a bowl.  We place the bowl \
+upside-down with the marble place at the center.  The marble is in \
+equilibrium, however, if it is moved -  even slightly- it will fall off of \
+the bowl.  This is unstable equilibrium.  Now flip the bowl over to it\
+\[CloseCurlyQuote]s normal configuration and place the marble at the center.  \
+The marble is again in equilibrium.  If the marble is moved slightly, it \
+returns to the center position.  This is stable equilibrium.  Notice that we \
+could increase the marbles speed sufficiently so that it escapes from the \
+bowl. \n\tFor a simple one dimensional mechanical system, the total energy is \
+the simple sum of the kinetic energy and the potential energy.  The kinetic \
+energy is the energy of motion, computed as the square of the speed, while \
+potential energy is the energy due to a position in a force field.  The total \
+energy of the object must always be greater than or equal to the potential \
+energy.  (Note: the implications if it were not are that either the objects \
+speed is an imaginary number or the mass is negative, neither one of which is \
+naturally occurring.)  For a stable system, the total energy of the object \
+must be less than the maximum potential energy of the \
+\"bowl\[CloseCurlyQuote]s rim.\"  This can be illustrated by taking some \
+arbitrary potential energy function graphed against its position, as shown in \
+figure 1. The lowest total energy possible occurs at the point x0, which \
+translates to the potential energy U(x0). The total energy on the graph is \
+represented as horizontal lines.  Therefore, if the total energy of the \
+object is less than E1, then it could not escape the confined energy well \
+centered around x0.  This object would then be thought of as being in stable \
+equilibrium.  If, on the other hand, the object had a total energy greater \
+than E1, then it could escape the energy well around x0.\n\tThis concept of a \
+one-dimensional energy well, can be expanded to two dimensions, as in the \
+case of the bowl and the marble.  It can also be extended to n-dimensional \
+space, where the energy wells are surfaces.\n\tIf the total energy of the \
+system is a function of time, then an additional requirement must be placed \
+on it in order to insure that it remains in stable equilibrium.  The \
+constraint is that E(t) must be a decreasing function of time, or dE(t)/dt < \
+0."], "Text",
+  Evaluatable->False],
+
+Cell[TextData[
+"No Input Form Generated:[font = section; inactive; startGroup; Cclosed; ]\n\
+System Models"], "Title",
+  CellHorizontalScrolling->False,
+  TextAlignment->Center]
+}, Closed]],
+
+Cell[TextData[
+"\tMathematical models of systems normally result in nth order differential \
+equations.  In the linear time-invariant case these equations all have \
+constant coefficients.  These constant coefficient differential equations can \
+be solved by utilizing either classical or transform methods.  For non-linear \
+nth order differential equations there are no systematic solution methods.  \
+However, by converting the problem from an nth order differential equation to \
+n 1st order differential equations, we can view possible solutions in a state \
+space.  For example, if we are interested in a second order system, then we \
+could plot the system solutions in terms of the objects position vs. its \
+speed.  Take an ideal pendulum for example.  The solution to its equation \
+yields a family of circles in this space.  Higher order systems are more \
+difficult to visualize, but are conceptually similar.\n\tThe conversion \
+process proceeds as follows [3]:  \n1) Let a system be described by the \
+differential equation:\n\td^n y/dt ^n + a_1 d^(n-1) y/dt^(n-1) + ......+ \
+a_n-1 dy/dt + a_n y = u(t)\n\twhere the an\[CloseCurlyQuote]s can be \
+functions of both time and y or its derivatives.\n2) Make the substitutions:\n\
+\tx[1]_dot = x[2] (= dx[1]/dt)\n\tx[2]_dot = x[3] \n\t\t.......\n\tx[n-1]_dot \
+= x[n]\n\tx[n]_dot = -a_n x[1] -.....- a_1 x[n] + u(t)\n\n\n\tWe now have \
+transformed the problem to n 1st order differential equations, where the n \
+variables are known as state variables.  These transformed equations can be \
+thought of  as existing in an n dimensional space and the equations written \
+in matrix notation as:\n\t(dX/dt =) X_dot = A X\n\n"], "Text",
+  Evaluatable->False]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Non-Linear Stability Criteria"], "Section",
+  Evaluatable->False],
+
+Cell[TextData[
+"\tIf we can find an energy function (here after referred to as the V \
+function) in the n dimensional state space that describes the system of \
+interest, then by using the concepts of  energy and equilibrium we can \
+determine in what region of the state space is the system stable.  This \
+concept was put forth by A. M. Liapunov near the end of the nineteenth \
+century in Russia.[1]\n\tIf we move an equilibrium point to the origin of the \
+state space by linear transformations, then the following stability criteria \
+apply:\n1) If V(X) is positive for all values of the state variables within a \
+region except at the origin, where V(0) = 0, then this scalar function is \
+called positive definite in that region. [3]\n2) If the time derivative of \
+V(X) is negative for all values of the state variables within a region except \
+the origin where V(0) = 0, then the scalar function is called negative \
+definite in that region. [3]\n\tIf both criteria are true for a V function, \
+then the system is considered to be asymptotically stable within that region. \
+ If 1 and 2 are true in the entire region of the state space, then the system \
+is globally asymptotically stable.  Simply put, this criteria is a \
+restatement of the energy requirements of stability for simple mechanical \
+systems.  Criteria 2 indicates that as time increases the system must not \
+increase its energy, since it could then drift out of the stable region.  It \
+should be noted that if V(X) and/or dV(X)/dt are not functions of all the \
+state variables, then they are considered to be semi-definite.\n\tSo the \
+problem of determining stability for non-linear systems is reduced to \
+determining the energy function V, better known as a Liapunov Function.  \
+Finding a suitable V function was for the most part a matter of guessing \
+until 1962.  Then D.G. Schultz put forth the systematic method of using the \
+gradient of V to determine a suitable Liapunov Function for a system.[1]\n\n\
+"], "Text",
+  Evaluatable->False],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Variable Gradient Method"], "Subsection",
+  Evaluatable->False],
+
+Cell[TextData[
+"\tIn order to meet the stability criteria set forth by Liapunov, a V \
+function must be found and then it\[CloseCurlyQuote]s time derivative.  Since \
+the state variables are implicit functions of time, then: (partial is the \
+partial derivative) \n\n\ndV/dt = partial V/partial x[1] x[1]_dot + .......+ \
+partial V/partial x[n] x[n]_dot\ndV/dt = Grad[V] X_dot\n\t\twhere Grad[ ] is \
+the Gradient Operator\n\n\n\tV can also be found from the gradient of V by a \
+path integration through state space.  This path integration will be \
+independent of the path if :\n\t\tpartial Grad[V][[i]]/partial x[j] = partial \
+Grad[V] [[j]]/partial x[i]\n\twhich for the three dimensional case reduces to \
+the vector identity:\n\t\tCurl[Grad[V] ] = 0\n\n\nThe gradient of V has the \
+form:\n\tGrad[V] = alpha X\n (where alpha is an n x n matrix of unknown \
+coefficients)\n\n"], "Text",
+  Evaluatable->False]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Methodology"], "Section",
+  Evaluatable->False],
+
+Cell[TextData[
+"\tTo generate the V function, using the Variable Gradient Method the \
+following steps are performed.  [1,4]\n1) Form dV/dt as:\n\t\tdV/dt = Grad[V] \
+X_dot = alpha X X_dot = alpha X A X\n2) Utilizing the vector identity and the \
+constraint that dV/dt must be negative definite, obtain values for the \
+alpha[i,j]\[CloseCurlyQuote]s.  (At minimum, force dV/dt to be negative \
+semi-definite).\n\tThis is a step which involves making quasi-arbitrary \
+choices for the alpha matrix depending on the two constraints.\n3) Form \
+Gradient of V from the alpha matrix\n4) Perform a path integral over all \
+variables in the state space to determine the Liapounov function V.\n5) Apply \
+the appropriate theorems to determine stability.\n\n\n\tWhile the method is \
+straightforward, the process is long and arduous.  This Mathematica \
+implementation performs steps 1, allows the user to interact with the \
+constraint equations until step 2 is completed, then performs steps 3 and 4.\n\
+\n"], "Text",
+  Evaluatable->False]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Bibliography"], "Section",
+  Evaluatable->False,
+  FontFamily->"Helv",
+  FontSize->14,
+  FontWeight->"Bold"],
+
+Cell[TextData[
+"\n\n1.Gibson, J.E. and Schultz, D.G. \"The Variable Gradient Method of \
+Generating Liapunov Functions with applications to Automatic Control Systems.\
+\"  Doctorial Dissertation, Purdue University, April 1962.\n\n\n2. Halliday, \
+D. and Resnick, R. \"Fundamentals of Physics\" Second Edition.  Section 8.5 \
+\"Mechanical Energy and Potential Energy Curve.\"  New York: Wiley & Sons \
+1981.\n\n\n3. Ogata, K. \"Modern Control Engineering\"  Section 6-5 and \
+Chapter 15.  Englewood Cliffs: Prentice-Hall, 1970.\n\n\n4. Schultz, D.G. \
+\"The Generation of Liapunov Functions\"  Advances in Control Systems Vol.2, \
+pages 1 - 63.  New York: Academic Press, 1965."], "Text",
+  Evaluatable->False,
+  FontFamily->"Helv",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Implementation"], "Subtitle",
+  Evaluatable->False,
+  CellHorizontalScrolling->False,
+  TextAlignment->Center],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Functions "], "Section",
+  Evaluatable->False],
+
+Cell[CellGroupData[{
+
+Cell[TextData["?VariableGradient"], "Input",
+  PageWidth->Infinity],
+
+Cell[OutputFormData["\<\
+No Input Form Generated
+
+
+
+
+
+
+\
+\>", "\<\
+VariableGradient[A] determines the time derivative of the
+   Liapounov Function for an nth order system described by
+   the matrix A. Any functions in A must be specified with
+   the variables x[1],x[2],...  The output is a numbered list
+   of constraints that should be forced to zero by  direct
+   substitution.  To aid in the process use the
+   FindConstraint function.
+
+\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False,
+  LineSpacing->{1, 1}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["?FindConstraint"], "Input",
+  PageWidth->Infinity],
+
+Cell[OutputFormData["\<\
+No Input Form Generated
+
+
+
+
+
+
+\
+\>", "\<\
+FindConstraint[number,variable] solves the numbered
+   constraint equation for the desired variable.
+
+\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False,
+  LineSpacing->{1, 1}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["?Curl"], "Input",
+  PageWidth->Infinity],
+
+Cell[OutputFormData["\<\
+No Input Form Generated
+
+
+
+
+
+
+\
+\>", "\<\
+Curl determines the additional curl contraints on Grad[V] so
+   that the V function can be found by any path integration. 
+   It computes  D[GradV[i],x[j]] - D[GradV[j],x[i]] for all
+   possible combinations of i and j. It's output consists of
+   these constraints and the form of Grad[V].
+
+\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False,
+  LineSpacing->{1, 1}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["?FindV"], "Input",
+  PageWidth->Infinity],
+
+Cell[OutputFormData["\<\
+No Input Form Generated
+
+
+
+
+
+
+\
+\>", "\<\
+FindV[ Path List ] integrates the Grad[V] function along the 
+   desired straight-line path.  If the path list is {1,2,3},
+   it integrates along x[1], with x[2] = x[3] = 0; then along
+   x[2], with x[1] = x[1] and x[3] = 0, etc. The output is
+   the resulting Liapounov Function V.
+
+\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False,
+  LineSpacing->{1, 1}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["?ResetVG"], "Input",
+  PageWidth->Infinity],
+
+Cell[OutputFormData["\<\
+No Input Form Generated
+
+
+
+
+
+
+\
+\>", "\<\
+ResetVG eliminates all remaining variables, so that the
+   process can be restarted.
+
+\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False,
+  LineSpacing->{1, 1}]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["VariableGradient process flow:"], "Section",
+  Evaluatable->False],
+
+Cell[TextData[
+"a) Define Matrix A from system. \nb) Invoke VariableGradient[ ] function.\n\t\
+1) the output of this function is:\n\t\ti) list of constraints (cross terms \
+of dV/dt) equation.\n\t\tii) explicit form of dV/dt\nc) Set alpha[i,j]\
+\[CloseCurlyQuote]s to eliminate constraint equations.\n\t1) FindConstraint \
+functions aids in determining alpha[i,j] values.\n\t2) an update of the \
+VariableGradient output can be displayed by invoking VDOT\nd) Repeat step c \
+until dV/dt is negative semi-definite or negative definite. \ne) Invoke Curl \
+to list Curl Constraints and Gradient of V.\nf) Set alpha[i,j]\
+\[CloseCurlyQuote]s to eliminate constraint equations.\n\t1) an update of the \
+Curl output can be displayed by invoking DELV.\ng) Repeat step f until all \
+DELV constraints are 0.\nh) Invoke FindV[ ] function.  This performs the path \
+integration, the argument is a path list.  (i.e.: If the path is x[2], x[1], \
+x[3]; then the path list would be {2,1,3})\ni) Invoke ResetVG to clear all \
+variables for reuse.\n\n"], "Text",
+  Evaluatable->False]
+}, Closed]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Examples"], "Section",
+  Evaluatable->False],
+
+Cell[CellGroupData[{
+
+Cell[TextData["A system represented by a 2 x 2 Matrix"], "Subsubtitle",
+  Evaluatable->False,
+  CellHorizontalScrolling->False,
+  TextAlignment->Center,
+  FontFamily->"Arial",
+  FontSize->14,
+  FontWeight->"Bold"],
+
+Cell[TextData[
+"A system is represented by the Matrix Equation A1, defined as:"], "Text",
+  Evaluatable->False,
+  FontFamily->"Helv",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["A1 = {{-1,2 x[1]^2},{0,-1}}"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+{{-1, 2*x[1]^2}, {0, -1}}
+
+
+
+
+
+
+
+\
+\>", "\<\
+            2
+{{-1, 2 x[1] }, {0, -1}}\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["VariableGradient[A1]"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{{1, -alpha[1, 2] - alpha[2, 1]}}]}, 
+   {\"V dot:\"}, {(-alpha[1, 2] - alpha[2, 1])*x[1]*x[2] + 
+     2*alpha[1, 1]*x[1]^3*x[2] - alpha[2, 2]*x[2]^2 + 
+     x[1]^2*(-alpha[1, 1] + 2*alpha[1, 2]*x[2]^2)}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+1   -alpha[1, 2] - alpha[2, 1]
+
+
+V dot:
+
+
+(-alpha[1, 2] - alpha[2, 1]) x[1] x[2] + 
+ 
+                    3                        2
+  2 alpha[1, 1] x[1]  x[2] - alpha[2, 2] x[2]  + 
+ 
+      2                                   2
+  x[1]  (-alpha[1, 1] + 2 alpha[1, 2] x[2] )\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[1,2]=alpha[2,1]=0;"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["VDOT"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData[
+"\<\
+TableForm[{{\"Constraints:\"}, {TableForm[{{1, 0}}]}, 
+   {\"V dot:\"}, {-(alpha[1, 1]*x[1]^2) + 
+     2*alpha[1, 1]*x[1]^3*x[2] - alpha[2, 2]*x[2]^2}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+1   0
+
+
+V dot:
+
+
+                  2                      3
+-(alpha[1, 1] x[1] ) + 2 alpha[1, 1] x[1]  x[2] - 
+ 
+                  2
+  alpha[2, 2] x[2]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[1,1] = 1;"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Curl"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData[
+"\<\
+TableForm[{{\"Constraints:\"}, {TableForm[{0}]}, {\"Grad V:\"}, 
+   {TableForm[{{x[1]}, {alpha[2, 2]*x[2]}}]}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+Constraints:
+
+
+0
+
+
+Grad V:
+
+
+x[1]
+
+
+alpha[2, 2] x[2]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["FindV[{1,2}]"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+Can't Format Cell
+
+
+
+
+
+
+
+\
+\>", "\<\
+General::intinit: Loading integration packages.\
+\>"], "Message",
+  PageWidth->Infinity,
+  Evaluatable->False],
+
+Cell[OutputFormData["\<\
+{x[1]^2/2 + (alpha[2, 2]*x[2]^2)/2}
+
+
+
+
+
+
+
+\
+\>", "\<\
+     2                   2
+ x[1]    alpha[2, 2] x[2]
+{----- + -----------------}
+   2             2\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["ResetVG"], "Input",
+  PageWidth->Infinity]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["A System represented by a 3 x 3 Matrix"], "Subsubtitle",
+  Evaluatable->False,
+  CellHorizontalScrolling->False,
+  TextAlignment->Center,
+  FontFamily->"Arial",
+  FontSize->14,
+  FontWeight->"Bold"],
+
+Cell[TextData[
+"A system is represented by the Matrix Equation A2,  defined as:"], "Text",
+  Evaluatable->False,
+  FontFamily->"Helv",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["A2 = {{0,1,0},{0,0,1},{-g[x[1]],-b, -a}}"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+{{0, 1, 0}, {0, 0, 1}, {-g[x[1]], -b, -a}}
+
+
+
+
+
+
+
+\
+\>", "\<\
+{{0, 1, 0}, {0, 0, 1}, {-g[x[1]], -b, -a}}\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["VariableGradient[A2]"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{{1, alpha[1, 1] - b*alpha[3, 1] - 
+        alpha[3, 2]*g[x[1]]}, 
+      {2, alpha[2, 1] - a*alpha[3, 1] - 
+        alpha[3, 3]*g[x[1]]}, 
+      {3, alpha[1, 3] + alpha[2, 2] - a*alpha[3, 2] - 
+        b*alpha[3, 3]}}]}, {\"V dot:\"}, 
+   {-(alpha[3, 1]*g[x[1]]*x[1]^2) + 
+     (alpha[1, 2] - b*alpha[3, 2])*x[2]^2 + 
+     (alpha[1, 3] + alpha[2, 2] - a*alpha[3, 2] - 
+        b*alpha[3, 3])*x[2]*x[3] + 
+     (alpha[2, 3] - a*alpha[3, 3])*x[3]^2 + 
+     x[1]*((alpha[1, 1] - b*alpha[3, 1] - 
+           alpha[3, 2]*g[x[1]])*x[2] + 
+        (alpha[2, 1] - a*alpha[3, 1] - alpha[3, 3]*g[x[1]])*
+         x[3])}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+1   alpha[1, 1] - b alpha[3, 1] - alpha[3, 2] g[x[1]]
+
+
+2   alpha[2, 1] - a alpha[3, 1] - alpha[3, 3] g[x[1]]
+
+
+3   alpha[1, 3] + alpha[2, 2] - a alpha[3, 2] - b alpha[3, 3]
+
+
+V dot:
+
+
+                          2
+-(alpha[3, 1] g[x[1]] x[1] ) + 
+ 
+                                    2
+  (alpha[1, 2] - b alpha[3, 2]) x[2]  + 
+ 
+  (alpha[1, 3] + alpha[2, 2] - a alpha[3, 2] - 
+ 
+     b alpha[3, 3]) x[2] x[3] + 
+ 
+                                    2
+  (alpha[2, 3] - a alpha[3, 3]) x[3]  + 
+ 
+  x[1] ((alpha[1, 1] - b alpha[3, 1] - alpha[3, 2] g[x[1]]) 
+ 
+      x[2] + (alpha[2, 1] - a alpha[3, 1] - 
+ 
+        alpha[3, 3] g[x[1]]) x[3])\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[1,3]=alpha[3,1] = 0;"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["VDOT"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{{1, alpha[1, 1] - alpha[3, 2]*g[x[1]]}, 
+      {2, alpha[2, 1] - alpha[3, 3]*g[x[1]]}, 
+      {3, alpha[2, 2] - a*alpha[3, 2] - b*alpha[3, 3]}}]}, 
+   {\"V dot:\"}, {(alpha[1, 2] - b*alpha[3, 2])*x[2]^2 + 
+     (alpha[2, 2] - a*alpha[3, 2] - b*alpha[3, 3])*x[2]*
+      x[3] + (alpha[2, 3] - a*alpha[3, 3])*x[3]^2 + 
+     x[1]*((alpha[1, 1] - alpha[3, 2]*g[x[1]])*x[2] + 
+        (alpha[2, 1] - alpha[3, 3]*g[x[1]])*x[3])}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+1   alpha[1, 1] - alpha[3, 2] g[x[1]]
+
+
+2   alpha[2, 1] - alpha[3, 3] g[x[1]]
+
+
+3   alpha[2, 2] - a alpha[3, 2] - b alpha[3, 3]
+
+
+V dot:
+
+
+                                  2
+(alpha[1, 2] - b alpha[3, 2]) x[2]  + 
+ 
+  (alpha[2, 2] - a alpha[3, 2] - b alpha[3, 3]) x[2] x[3] + 
+ 
+                                    2
+  (alpha[2, 3] - a alpha[3, 3]) x[3]  + 
+ 
+  x[1] ((alpha[1, 1] - alpha[3, 2] g[x[1]]) x[2] + 
+ 
+     (alpha[2, 1] - alpha[3, 3] g[x[1]]) x[3])\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["FindConstraint[1,alpha[1,1]]"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+{{alpha[1, 1] -> alpha[3, 2]*g[x[1]]}}
+
+
+
+
+
+
+
+\
+\>", "\<\
+{{alpha[1, 1] -> alpha[3, 2] g[x[1]]}}\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[1, 1]= alpha[3,2]g[x[1]];"], "Output",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["FindConstraint[2,alpha[2,1]]"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+{{alpha[2, 1] -> alpha[3, 3]*g[x[1]]}}
+
+
+
+
+
+
+
+\
+\>", "\<\
+{{alpha[2, 1] -> alpha[3, 3] g[x[1]]}}\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[2, 1]= alpha[3,3] g[x[1]];"], "Output",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["VDOT"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{{1, 0}, {2, 0}, 
+      {3, alpha[2, 2] - a*alpha[3, 2] - b*alpha[3, 3]}}]}, 
+   {\"V dot:\"}, {(alpha[1, 2] - b*alpha[3, 2])*x[2]^2 + 
+     (alpha[2, 2] - a*alpha[3, 2] - b*alpha[3, 3])*x[2]*
+      x[3] + (alpha[2, 3] - a*alpha[3, 3])*x[3]^2}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+1   0
+
+
+2   0
+
+
+3   alpha[2, 2] - a alpha[3, 2] - b alpha[3, 3]
+
+
+V dot:
+
+
+                                  2
+(alpha[1, 2] - b alpha[3, 2]) x[2]  + 
+ 
+  (alpha[2, 2] - a alpha[3, 2] - b alpha[3, 3]) x[2] x[3] + 
+ 
+                                    2
+  (alpha[2, 3] - a alpha[3, 3]) x[3]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["FindConstraint[3,alpha[2,2]]"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[TextData["alpha[2, 2]= 3 b + a alpha[3, 2];"], "Output",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["VDOT"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{{1, 0}, {2, 0}, {3, 3*b - b*alpha[3, 3]}}]}, 
+   {\"V dot:\"}, {(alpha[1, 2] - b*alpha[3, 2])*x[2]^2 + 
+     (3*b - b*alpha[3, 3])*x[2]*x[3] + 
+     (alpha[2, 3] - a*alpha[3, 3])*x[3]^2}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+1   0
+
+
+2   0
+
+
+3   3 b - b alpha[3, 3]
+
+
+V dot:
+
+
+                                  2
+(alpha[1, 2] - b alpha[3, 2]) x[2]  + 
+ 
+  (3 b - b alpha[3, 3]) x[2] x[3] + 
+ 
+                                    2
+  (alpha[2, 3] - a alpha[3, 3]) x[3]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[3,3] = 3;"], "Input",
+  PageWidth->Infinity],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Curl"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{alpha[1, 2] - 3*g[x[1]] - 
+       3*x[1]*Derivative[1][g][x[1]], 0, 
+      alpha[2, 3] - alpha[3, 2]}]}, {\"Grad V:\"}, 
+   {TableForm[{{alpha[3, 2]*g[x[1]]*x[1] + 
+        alpha[1, 2]*x[2]}, 
+      {3*g[x[1]]*x[1] + (3*b + a*alpha[3, 2])*x[2] + 
+        alpha[2, 3]*x[3]}, {alpha[3, 2]*x[2] + 3*x[3]}}]}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+alpha[1, 2] - 3 g[x[1]] - 3 x[1] g'[x[1]]
+
+
+0
+
+
+alpha[2, 3] - alpha[3, 2]
+
+
+Grad V:
+
+
+
+
+
+
+
+alpha[3, 2] g[x[1]] x[1] + alpha[1, 2] x[2]
+
+
+3 g[x[1]] x[1] + (3 b + a alpha[3, 2]) x[2] + 
+ 
+  alpha[2, 3] x[3]
+
+
+alpha[3, 2] x[2] + 3 x[3]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[1,2] = 3 g[x[1]]+3 x[1] g'[x[1]];"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["DELV"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{0, 0, alpha[2, 3] - alpha[3, 2]}]}, 
+   {\"Grad V:\"}, {TableForm[{{alpha[3, 2]*g[x[1]]*x[1] + 
+        x[2]*(3*g[x[1]] + 3*x[1]*Derivative[1][g][x[1]])}, 
+      {3*g[x[1]]*x[1] + (3*b + a*alpha[3, 2])*x[2] + 
+        alpha[2, 3]*x[3]}, {alpha[3, 2]*x[2] + 3*x[3]}}]}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+0
+
+
+0
+
+
+alpha[2, 3] - alpha[3, 2]
+
+
+Grad V:
+
+
+
+
+
+
+
+alpha[3, 2] g[x[1]] x[1] + x[2] (3 g[x[1]] + 3 x[1] g'[x[1]])
+
+
+3 g[x[1]] x[1] + (3 b + a alpha[3, 2]) x[2] + 
+ 
+  alpha[2, 3] x[3]
+
+
+alpha[3, 2] x[2] + 3 x[3]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[2,3]=alpha[3,2] = 2 a;"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["DELV"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData[
+"\<\
+TableForm[{{\"Constraints:\"}, {TableForm[{0, 0, 0}]}, 
+   {\"Grad V:\"}, {TableForm[{{2*a*g[x[1]]*x[1] + 
+        x[2]*(3*g[x[1]] + 3*x[1]*Derivative[1][g][x[1]])}, 
+      {3*g[x[1]]*x[1] + (2*a^2 + 3*b)*x[2] + 2*a*x[3]}, 
+      {2*a*x[2] + 3*x[3]}}]}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+Constraints:
+
+
+0
+
+
+0
+
+
+0
+
+
+Grad V:
+
+
+2 a g[x[1]] x[1] + x[2] (3 g[x[1]] + 3 x[1] g'[x[1]])
+
+
+                     2
+3 g[x[1]] x[1] + (2 a  + 3 b) x[2] + 2 a x[3]
+
+
+2 a x[2] + 3 x[3]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["FindV[{1,2,3}]"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+{2*a*Integrate[g[x[1]]*x[1], {x[1], 0, x[1]}] + 
+   3*g[x[1]]*x[1]*x[2] + ((2*a^2 + 3*b)*x[2]^2)/2 + 
+   2*a*x[2]*x[3] + (3*x[3]^2)/2}
+
+
+
+
+
+
+
+\
+\>", "\<\
+{2 a Integrate[g[x[1]] x[1], {x[1], 0, x[1]}] + 
+ 
+                            2            2
+                        (2 a  + 3 b) x[2]
+  3 g[x[1]] x[1] x[2] + ------------------ + 2 a x[2] x[3] + 
+                                2
+ 
+        2
+  3 x[3]
+  -------}
+     2\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["ResetVG"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Another System represented by a 3 x 3 Matrix"], "Subsubtitle",
+  Evaluatable->False,
+  CellHorizontalScrolling->False,
+  TextAlignment->Center,
+  FontFamily->"Arial",
+  FontSize->14,
+  FontWeight->"Bold"],
+
+Cell[TextData[
+"A system is represented by the Matrix Equation A3, defined as:"], "Text",
+  Evaluatable->False,
+  FontFamily->"Helv",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["A3={{0,1,0},{0, -d, g[x[3]]},{-b ,-1,-c}}"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+{{0, 1, 0}, {0, -d, g[x[3]]}, {-b, -1, -c}}
+
+
+
+
+
+
+
+\
+\>", "\<\
+{{0, 1, 0}, {0, -d, g[x[3]]}, {-b, -1, -c}}\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["VariableGradient[A3]"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{{1, alpha[1, 1] - d*alpha[2, 1] - 
+        alpha[3, 1] - b*alpha[3, 2]}, 
+      {2, -(c*alpha[3, 1]) - b*alpha[3, 3] + 
+        alpha[2, 1]*g[x[3]]}, 
+      {3, alpha[1, 3] - d*alpha[2, 3] - c*alpha[3, 2] - 
+        alpha[3, 3] + alpha[2, 2]*g[x[3]]}}]}, {\"V dot:\"}, 
+   {-(b*alpha[3, 1]*x[1]^2) + 
+     (alpha[1, 2] - d*alpha[2, 2] - alpha[3, 2])*x[2]^2 + 
+     (alpha[1, 3] - d*alpha[2, 3] - c*alpha[3, 2] - 
+        alpha[3, 3] + alpha[2, 2]*g[x[3]])*x[2]*x[3] + 
+     (-(c*alpha[3, 3]) + alpha[2, 3]*g[x[3]])*x[3]^2 + 
+     x[1]*((alpha[1, 1] - d*alpha[2, 1] - alpha[3, 1] - 
+           b*alpha[3, 2])*x[2] + 
+        (-(c*alpha[3, 1]) - b*alpha[3, 3] + 
+           alpha[2, 1]*g[x[3]])*x[3])}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+
+
+
+
+
+1   alpha[1, 1] - d alpha[2, 1] - alpha[3, 1] - b alpha[3, 2]
+
+
+2   -(c alpha[3, 1]) - b alpha[3, 3] + alpha[2, 1] g[x[3]]
+
+
+3   alpha[1, 3] - d alpha[2, 3] - c alpha[3, 2] - 
+ 
+  alpha[3, 3] + alpha[2, 2] g[x[3]]
+
+
+V dot:
+
+
+                    2
+-(b alpha[3, 1] x[1] ) + 
+ 
+                                                  2
+  (alpha[1, 2] - d alpha[2, 2] - alpha[3, 2]) x[2]  + 
+ 
+  (alpha[1, 3] - d alpha[2, 3] - c alpha[3, 2] - 
+ 
+     alpha[3, 3] + alpha[2, 2] g[x[3]]) x[2] x[3] + 
+ 
+                                               2
+  (-(c alpha[3, 3]) + alpha[2, 3] g[x[3]]) x[3]  + 
+ 
+  x[1] ((alpha[1, 1] - d alpha[2, 1] - alpha[3, 1] - 
+ 
+        b alpha[3, 2]) x[2] + 
+ 
+     (-(c alpha[3, 1]) - b alpha[3, 3] + 
+ 
+        alpha[2, 1] g[x[3]]) x[3])\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[3,1] = 0;"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[TextData["alpha[1,3] = 0;"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[TextData["alpha[2,3] = 0;"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[TextData["alpha[3,2] = 0;"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["VDOT"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{{1, alpha[1, 1] - d*alpha[2, 1]}, 
+      {2, -(b*alpha[3, 3]) + alpha[2, 1]*g[x[3]]}, 
+      {3, -alpha[3, 3] + alpha[2, 2]*g[x[3]]}}]}, 
+   {\"V dot:\"}, {(alpha[1, 2] - d*alpha[2, 2])*x[2]^2 + 
+     (-alpha[3, 3] + alpha[2, 2]*g[x[3]])*x[2]*x[3] - 
+     c*alpha[3, 3]*x[3]^2 + 
+     x[1]*((alpha[1, 1] - d*alpha[2, 1])*x[2] + 
+        (-(b*alpha[3, 3]) + alpha[2, 1]*g[x[3]])*x[3])}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+1   alpha[1, 1] - d alpha[2, 1]
+
+
+2   -(b alpha[3, 3]) + alpha[2, 1] g[x[3]]
+
+
+3   -alpha[3, 3] + alpha[2, 2] g[x[3]]
+
+
+V dot:
+
+
+                                  2
+(alpha[1, 2] - d alpha[2, 2]) x[2]  + 
+ 
+  (-alpha[3, 3] + alpha[2, 2] g[x[3]]) x[2] x[3] - 
+ 
+                    2
+  c alpha[3, 3] x[3]  + x[1] 
+ 
+   ((alpha[1, 1] - d alpha[2, 1]) x[2] + 
+ 
+     (-(b alpha[3, 3]) + alpha[2, 1] g[x[3]]) x[3])\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[1,1]=d alpha[2,1];"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[TextData["alpha[3,3]=alpha[2,2]g[x[3]];"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["VDOT"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{{1, 0}, {2, 
+       alpha[2, 1]*g[x[3]] - b*alpha[2, 2]*g[x[3]]}, {3, 0}}
+      ]}, {\"V dot:\"}, {(alpha[1, 2] - d*alpha[2, 2])*
+      x[2]^2 + (alpha[2, 1]*g[x[3]] - 
+        b*alpha[2, 2]*g[x[3]])*x[1]*x[3] - 
+     c*alpha[2, 2]*g[x[3]]*x[3]^2}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+1   0
+
+
+2   alpha[2, 1] g[x[3]] - b alpha[2, 2] g[x[3]]
+
+
+3   0
+
+
+V dot:
+
+
+                                  2
+(alpha[1, 2] - d alpha[2, 2]) x[2]  + 
+ 
+  (alpha[2, 1] g[x[3]] - b alpha[2, 2] g[x[3]]) x[1] x[3] - 
+ 
+                            2
+  c alpha[2, 2] g[x[3]] x[3]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[2,1]=b alpha[2,2];"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["VDOT"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{{1, 0}, {2, 0}, {3, 0}}]}, {\"V dot:\"}, 
+   {(alpha[1, 2] - d*alpha[2, 2])*x[2]^2 - 
+     c*alpha[2, 2]*g[x[3]]*x[3]^2}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Constraints:
+
+
+1   0
+
+
+2   0
+
+
+3   0
+
+
+V dot:
+
+
+                                  2
+(alpha[1, 2] - d alpha[2, 2]) x[2]  - 
+ 
+                            2
+  c alpha[2, 2] g[x[3]] x[3]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Curl"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+TableForm[{{\"Constraints:\"}, 
+   {TableForm[{alpha[1, 2] - b*alpha[2, 2], 0, 0}]}, 
+   {\"Grad V:\"}, {TableForm[{{b*d*alpha[2, 2]*x[1] + 
+        alpha[1, 2]*x[2]}, 
+      {b*alpha[2, 2]*x[1] + alpha[2, 2]*x[2]}, 
+      {alpha[2, 2]*g[x[3]]*x[3]}}]}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+Constraints:
+
+
+alpha[1, 2] - b alpha[2, 2]
+
+
+0
+
+
+0
+
+
+Grad V:
+
+
+b d alpha[2, 2] x[1] + alpha[1, 2] x[2]
+
+
+b alpha[2, 2] x[1] + alpha[2, 2] x[2]
+
+
+alpha[2, 2] g[x[3]] x[3]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[TextData["alpha[1,2] = b alpha[2,2];"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[TextData["alpha[2,2]=2;"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[CellGroupData[{
+
+Cell[TextData["DELV"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData[
+"\<\
+TableForm[{{\"Constraints:\"}, {TableForm[{0, 0, 0}]}, 
+   {\"Grad V:\"}, {TableForm[{{2*b*d*x[1] + 2*b*x[2]}, 
+      {2*b*x[1] + 2*x[2]}, {2*g[x[3]]*x[3]}}]}}]
+
+
+
+
+
+
+
+\
+\>", "\<\
+Constraints:
+
+
+0
+
+
+0
+
+
+0
+
+
+Grad V:
+
+
+2 b d x[1] + 2 b x[2]
+
+
+2 b x[1] + 2 x[2]
+
+
+2 g[x[3]] x[3]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["FindV[{1,2,3}]"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData[
+"\<\
+{2*Integrate[g[x[3]]*x[3], {x[3], 0, x[3]}] + b*d*x[1]^2 + 
+   2*b*x[1]*x[2] + x[2]^2}
+
+
+
+
+
+
+
+\
+\>", "\<\
+                                                      2
+{2 Integrate[g[x[3]] x[3], {x[3], 0, x[3]}] + b d x[1]  + 
+ 
+                      2
+  2 b x[1] x[2] + x[2] }\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData["Vdot"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}],
+
+Cell[OutputFormData["\<\
+(2*b - 2*d)*x[2]^2 - 2*c*g[x[3]]*x[3]^2
+
+
+
+
+
+
+
+\
+\>", "\<\
+                2                   2
+(2 b - 2 d) x[2]  - 2 c g[x[3]] x[3]\
+\>"], "Output",
+  PageWidth->Infinity,
+  Evaluatable->False]
+}, Open  ]]
+}, Closed]],
+
+Cell[TextData["ResetVG"], "Input",
+  PageWidth->Infinity,
+  FontFamily->"Courier",
+  FontSize->12,
+  FontWeight->"Plain",
+  FontSlant->"Plain",
+  FontTracking->"Plain",
+  FontVariations->{"Underline"->False,
+  "Outline"->False,
+  "Shadow"->False}]
+}, Closed]]
+},
+FrontEndVersion->"Macintosh 3.0",
+ScreenRectangle->{{0, 832}, {0, 604}},
+AutoGeneratedPackage->None,
+WindowToolbars->{},
+CellGrouping->Manual,
+WindowSize->{520, 509},
+WindowMargins->{{97, Automatic}, {Automatic, 27}},
+PrivateNotebookOptions->{"ColorPalette"->{RGBColor, -1}},
+ShowCellLabel->True,
+ShowCellTags->False,
+RenderingOptions->{"ObjectDithering"->True,
+"RasterDithering"->False},
+MacintoshSystemPageSetup->"\<\
+00<0001804P000000]P2:?oQon82n@960dL5:0?l0080001804P000000]P2:001
+0000I00000400`<300000BL?00400@00000000000000060001T1T00000000000
+00000000000000000000000000000000\>"
+]
+
+
+(***********************************************************************
+Cached data follows.  If you edit this Notebook file directly, not using
+Mathematica, you must remove the line containing CacheID at the top of 
+the file.  The cache data will then be recreated when you save this file 
+from within Mathematica.
+***********************************************************************)
+
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+
+(*NotebookFileOutline
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[1731, 51, 160, 4, 177, "Title",
+  Evaluatable->False],
+Cell[1894, 57, 307, 5, 190, "Text",
+  Evaluatable->False],
+Cell[2204, 64, 282, 10, 27, "Input",
+  InitializationCell->True],
+Cell[2489, 76, 794, 18, 133, "Text",
+  Evaluatable->False]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[3320, 99, 131, 3, 51, "Subtitle",
+  Evaluatable->False],
+
+Cell[CellGroupData[{
+Cell[3476, 106, 69, 1, 51, "Section",
+  Evaluatable->False],
+Cell[3548, 109, 1486, 26, 70, "Text",
+  Evaluatable->False],
+Cell[5037, 137, 2482, 34, 70, "Text",
+  Evaluatable->False],
+Cell[7522, 173, 177, 4, 70, "Title"]
+}, Closed]],
+Cell[7714, 180, 1715, 23, 459, "Text",
+  Evaluatable->False]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[9466, 208, 80, 1, 31, "Section",
+  Evaluatable->False],
+Cell[9549, 211, 2026, 28, 398, "Text",
+  Evaluatable->False],
+
+Cell[CellGroupData[{
+Cell[11600, 243, 78, 1, 46, "Subsection",
+  Evaluatable->False],
+Cell[11681, 246, 913, 13, 366, "Text",
+  Evaluatable->False]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[12643, 265, 62, 1, 31, "Section",
+  Evaluatable->False],
+Cell[12708, 268, 1032, 15, 318, "Text",
+  Evaluatable->False]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[13777, 288, 123, 4, 28, "Section",
+  Evaluatable->False],
+Cell[13903, 294, 896, 18, 303, "Text",
+  Evaluatable->False]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[14836, 317, 125, 3, 51, "Subtitle",
+  Evaluatable->False],
+
+Cell[CellGroupData[{
+Cell[14986, 324, 61, 1, 51, "Section",
+  Evaluatable->False],
+
+Cell[CellGroupData[{
+Cell[15072, 329, 67, 1, 27, "Input"],
+Cell[15142, 332, 526, 22, 123, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[15705, 359, 65, 1, 27, "Input"],
+Cell[15773, 362, 254, 17, 53, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[16064, 384, 55, 1, 27, "Input"],
+Cell[16122, 387, 443, 20, 95, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[16602, 412, 56, 1, 27, "Input"],
+Cell[16661, 415, 436, 20, 95, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[17134, 440, 58, 1, 27, "Input"],
+Cell[17195, 443, 238, 17, 53, "Output",
+  Evaluatable->False]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[17482, 466, 81, 1, 31, "Section",
+  Evaluatable->False],
+Cell[17566, 469, 1068, 15, 302, "Text",
+  Evaluatable->False]
+}, Closed]]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[18683, 490, 59, 1, 31, "Section",
+  Evaluatable->False],
+
+Cell[CellGroupData[{
+Cell[18767, 495, 213, 6, 52, "Subsubtitle",
+  Evaluatable->False],
+Cell[18983, 503, 298, 10, 31, "Text",
+  Evaluatable->False],
+
+Cell[CellGroupData[{
+Cell[19306, 517, 267, 9, 27, "Input"],
+Cell[19576, 528, 170, 15, 34, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[19783, 548, 260, 9, 27, "Input"],
+Cell[20046, 559, 656, 43, 244, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[20717, 605, 264, 9, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[21006, 618, 244, 9, 27, "Input"],
+Cell[21253, 629, 436, 40, 227, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[21704, 672, 255, 9, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[21984, 685, 244, 9, 27, "Input"],
+Cell[22231, 696, 271, 28, 130, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[22539, 729, 252, 9, 27, "Input"],
+Cell[22794, 740, 172, 14, 21, "Message",
+  Evaluatable->False],
+Cell[22969, 756, 241, 17, 52, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[23225, 776, 57, 1, 27, "Input"]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[23319, 782, 213, 6, 41, "Subsubtitle",
+  Evaluatable->False],
+Cell[23535, 790, 299, 10, 31, "Text",
+  Evaluatable->False],
+
+Cell[CellGroupData[{
+Cell[23859, 804, 280, 9, 27, "Input"],
+Cell[24142, 815, 191, 14, 25, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[24370, 834, 260, 9, 27, "Input"],
+Cell[24633, 845, 1432, 76, 437, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[26080, 924, 266, 9, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[26371, 937, 244, 9, 27, "Input"],
+Cell[26618, 948, 1067, 62, 375, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[27722, 1015, 268, 9, 27, "Input"],
+Cell[27993, 1026, 183, 14, 25, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[28191, 1043, 272, 9, 27, "Output"],
+
+Cell[CellGroupData[{
+Cell[28488, 1056, 268, 9, 27, "Input"],
+Cell[28759, 1067, 183, 14, 25, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[28957, 1084, 273, 9, 27, "Output"],
+
+Cell[CellGroupData[{
+Cell[29255, 1097, 244, 9, 27, "Input"],
+Cell[29502, 1108, 717, 55, 340, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[30234, 1166, 268, 9, 27, "Input"],
+Cell[30505, 1177, 274, 9, 27, "Output"],
+
+Cell[CellGroupData[{
+Cell[30804, 1190, 244, 9, 27, "Input"],
+Cell[31051, 1201, 613, 54, 340, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[31679, 1258, 65, 1, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[31769, 1263, 244, 9, 27, "Input"],
+Cell[32016, 1274, 726, 68, 437, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[32757, 1345, 279, 9, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[33061, 1358, 244, 9, 27, "Input"],
+Cell[33308, 1369, 667, 66, 437, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[33990, 1438, 268, 9, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[34283, 1451, 244, 9, 27, "Input"],
+Cell[34530, 1462, 543, 41, 218, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[35110, 1508, 254, 9, 27, "Input"],
+Cell[35367, 1519, 511, 26, 113, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[35893, 1548, 247, 9, 27, "Input"]
+}, Closed]],
+
+Cell[CellGroupData[{
+Cell[36177, 1562, 219, 6, 41, "Subsubtitle",
+  Evaluatable->False],
+Cell[36399, 1570, 298, 10, 31, "Text",
+  Evaluatable->False],
+
+Cell[CellGroupData[{
+Cell[36722, 1584, 281, 9, 27, "Input"],
+Cell[37006, 1595, 193, 14, 25, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[37236, 1614, 260, 9, 27, "Input"],
+Cell[37499, 1625, 1651, 85, 515, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[39165, 1713, 255, 9, 27, "Input"],
+Cell[39423, 1724, 255, 9, 27, "Input"],
+Cell[39681, 1735, 255, 9, 27, "Input"],
+Cell[39939, 1746, 255, 9, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[40219, 1759, 244, 9, 27, "Input"],
+Cell[40466, 1770, 979, 62, 375, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[41460, 1835, 264, 9, 27, "Input"],
+Cell[41727, 1846, 269, 9, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[42021, 1859, 244, 9, 27, "Input"],
+Cell[42268, 1870, 706, 56, 340, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[42989, 1929, 264, 9, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[43278, 1942, 244, 9, 27, "Input"],
+Cell[43525, 1953, 474, 51, 323, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[44036, 2009, 244, 9, 27, "Input"],
+Cell[44283, 2020, 530, 40, 209, "Output",
+  Evaluatable->False]
+}, Open  ]],
+Cell[44828, 2063, 266, 9, 27, "Input"],
+Cell[45097, 2074, 253, 9, 27, "Input"],
+
+Cell[CellGroupData[{
+Cell[45375, 2087, 244, 9, 27, "Input"],
+Cell[45622, 2098, 363, 38, 209, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[46022, 2141, 254, 9, 27, "Input"],
+Cell[46279, 2152, 359, 20, 60, "Output",
+  Evaluatable->False]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[46675, 2177, 244, 9, 27, "Input"],
+Cell[46922, 2188, 220, 15, 34, "Output",
+  Evaluatable->False]
+}, Open  ]]
+}, Closed]],
+Cell[47169, 2207, 247, 9, 24, "Input"]
+}, Closed]]
+}
+]
+*)
+
+
+
+
+(***********************************************************************
+End of Mathematica Notebook file.
+***********************************************************************)
+
