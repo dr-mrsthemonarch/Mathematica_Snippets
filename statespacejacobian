@@ -1,0 +1,11 @@
+JacobianMatrix[f_List?VectorQ, x_List] := 
+ Outer[D, f, x] /; Equal @@ (Dimensions /@ {f, x})
+
+JacobianDeterminant[f_List?VectorQ, x_List] := 
+ Det[JacobianMatrix[f, x]] /; Equal @@ (Dimensions /@ {f, x})
+ 
+ (*example*)
+ 
+a = {x1^3 + 2 x2^2, 3 x1^4 + 7 x2} (*2 different ODEs, for matA*) 
+b = {x1, x2} (*equation variables*)
+JacobianMatrix[a, b] // MatrixForm
