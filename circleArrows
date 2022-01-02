@@ -1,0 +1,14 @@
+arcsWArrows[args1 : {{_, {_, _}} ..}, 
+  dir_List : {Directive[GrayLevel[.3], 
+     Arrowheads[{{-0.05, 0}, {0.05, 1}}]]}] := 
+ ParametricPlot[
+   Evaluate[#[[1]]*{Cos[Rescale[u, {0, 2 Pi}, Abs@#[[2]]]], 
+        Sin[Rescale[u, {0, 2 Pi}, Abs@#[[2]]]]} & /@ args1], {u, 0, 
+    2 Pi}, PlotStyle -> dir, Axes -> False, PlotRangePadding -> .2, 
+   ImageSize -> 200] /. Line[x_, ___] :> Arrow[x]
+
+rdsAndAngls = {{0.8, {0, 85 \[Pi]/180}}, {1.25, {\[Pi]/2, 0}}};
+directives = {Directive[Red, Thick, 
+    Arrowheads[{{0.0, 0.0}, {0.05, 1}}]]};
+arcsWArrows[rdsAndAngls, {directives[[1]]}]
+
