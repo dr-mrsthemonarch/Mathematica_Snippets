@@ -7,3 +7,5 @@ This is a respository of diferent mathematica scripts I've found, modified or wr
 All files are in the Wolfram Script format mostly because I'm lazy...they are not intended to be an actual script to be run as is, 
 but rather code, with data (if the script requires data) as an example...They are bare minimum with no comments and only one example that may or may not 
 encompass everything they are capable of doing. 
+
+If you recognize code that belongs to you, please let me know and I'll put credit! I've tried to find original creators for scripts I've found, but alas can find no more.
