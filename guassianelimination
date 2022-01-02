@@ -1,0 +1,14 @@
+GaussianElimination[m_?MatrixQ, v_?VectorQ] := 
+ Last /@ RowReduce[Flatten /@ Transpose[{m, v}]]
+
+LinearSolve[matx, v]
+sol = GaussianElimination[matx, v]
+
+matx . sol === v
+
+LinearSolve[matq, v]
+GaussianElimination[Q, v]
+
+RowReduce[matx] // MatrixForm
+
+RowReduce[matq] // MatrixForm
