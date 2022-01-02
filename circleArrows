@@ -7,8 +7,11 @@ arcsWArrows[args1 : {{_, {_, _}} ..},
     2 Pi}, PlotStyle -> dir, Axes -> False, PlotRangePadding -> .2, 
    ImageSize -> 200] /. Line[x_, ___] :> Arrow[x]
 
-rdsAndAngls = {{0.8, {0, 85 \[Pi]/180}}, {1.25, {\[Pi]/2, 0}}};
-directives = {Directive[Red, Thick, 
-    Arrowheads[{{0.0, 0.0}, {0.05, 1}}]]};
-arcsWArrows[rdsAndAngls, {directives[[1]]}]
+rdsAndAngls = {{0.5, {0, 60 \[Pi]/180}}, {1.25, {\[Pi]/2, 0}}};
+directives = {Directive[Blue, Thick, 
+    Arrowheads[{{0.0, 0.0}, {0.05, 1}}]], 
+   Directive[Red, Thick, Arrowheads[{{0.0, 0.0}, {0.05, 1}}]]};
+arcsWArrows[rdsAndAngls, directives]
+
+
 
