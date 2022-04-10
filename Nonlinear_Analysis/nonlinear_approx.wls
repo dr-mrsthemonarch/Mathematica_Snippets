@@ -1,3 +1,5 @@
+(*Non linear Approximator for pendulum Length, inertia*)
+
 dir = NotebookDirectory[];
 SetDirectory[dir];
 
