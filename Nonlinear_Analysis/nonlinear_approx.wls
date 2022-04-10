@@ -1,4 +1,4 @@
-(*Non linear Approximator for pendulum Length, inertia*)
+(*Non linear Approximator for pendulum Length, inertia, Allows hand measurement, then parameterized nonlinear calculation of approximate inertia value*)
 
 dir = NotebookDirectory[];
 SetDirectory[dir];
