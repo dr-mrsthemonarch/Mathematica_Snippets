@@ -1,14 +1,11 @@
 GaussianElimination[m_?MatrixQ, v_?VectorQ] := 
  Last /@ RowReduce[Flatten /@ Transpose[{m, v}]]
 
-LinearSolve[matx, v]
-sol = GaussianElimination[matx, v]
+(*example*)
 
-matx . sol === v
+matx = RandomReal[10, {3, 3}];
+vec = RandomReal[3, 3];
+LinearSolve[matx, vec]
 
-LinearSolve[matq, v]
-GaussianElimination[Q, v]
+matx . sol == vec
 
-RowReduce[matx] // MatrixForm
-
-RowReduce[matq] // MatrixForm
