@@ -1,4 +1,4 @@
-# mathematicas
+# Mathematica Snippets
 Different programs and scripts I wrote for Mathematica 
 
 
