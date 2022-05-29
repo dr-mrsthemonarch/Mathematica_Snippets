@@ -6,7 +6,7 @@ quaternionToRotation[qq_] /; QuaternionQ[ToQuaternion[qq]] :=
       2 aim {r, aim}/(r^2 + aim^2), 
       1]}, -LeviCivitaTensor[3, List] . (Rest[List @@ q]/aim)]]]
 
-data2 = Import["data.txt", "Package"];
+data = Import["data.txt", "Package"];
 
 m = IdentityMatrix[4];
 m[[1 ;; 3, 1 ;; 3]] = EulerMatrix[{a, b, c}, {1, 2, 3}];
