@@ -1,0 +1,36 @@
+sweep[pts_, r_] := Module[{p, f, c}, p = pts;
+  While[f = Nearest[p -> Automatic];
+   c = f[p, {2, r}];
+   Last[Dimensions[c]] != 1, p = Pick[p, First[#] <= Last[#] & /@ c];];
+  p]
+
+distinct4[n_, r_, maxiter_] := Module[{p, m, k}, p = {};
+  m = 0;
+  k = maxiter;
+  While[p = 
+    Join[p, 
+     Table[{RandomInteger[2048, n][[i]], 
+       RandomInteger[1536, n][[i]]}, {i, 1, n}]];
+   p = sweep[p, 0.0000001 r];
+   k = If[Length[p] > m, maxiter, k - 1];
+   m = Length[p];
+   m < n && k > 0];
+  {{GrayLevel[RandomReal[{0, 0.3}]], 
+    Disk[#, r] & /@ If[Length[p] > n, Take[p, n], p]},
+   {GrayLevel[1], 
+    Disk[# + RandomReal[{0.1, 2}] RandomInteger[{-1, 1}], 
+       RandomReal[2]] & /@ If[Length[p] > n, Take[p, n], p]}}
+  ]
+
+counts = 250;
+iterations = 10;
+circles = 
+  Table[{distinct4[i, RandomReal[{4, 10}], iterations]}, {i, 1, 
+     counts}] // Flatten;
+simulation = 
+ GaussianFilter[
+  Image[ColorConvert[
+    Graphics[circles, ImageSize -> {2048, 1536}/3, 
+     PlotRangePadding -> None, ImageMargins -> None], "Grayscale"], 
+   "Bit16", ImageSize -> {2048, 1536}/2, ImageResolution -> 96], 2]
+(*effects = ImageEffect[simulation,{"PoissonNoise",0.01}]*)
